@@ -10,6 +10,6 @@ repository = "https://github.com/rotexengine/rotex-shader-cooker"
 naga = { version = "29.0.3", features = ["spv-in", "wgsl-in", "wgsl-out"] }
 postcard = { version = "1.1.1", features = ["alloc"] }
 rotex-shader-core = { version = "0.1.0" }
-rotex-types = { version = "0.1.1" }
+rotex-types = { version = "0.1.2" }
 shaderc = "0.10.1"
 thiserror = "2.0.18"
