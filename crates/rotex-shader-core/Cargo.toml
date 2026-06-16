@@ -1,0 +1,11 @@
+[package]
+name = "rotex-shader-core"
+version = "0.1.0"
+edition = "2024"
+license = "MIT"
+description = "Shared shader compilation vocabulary for Rotex"
+repository = "https://github.com/rotexengine/rotex-shader-core"
+
+[dependencies]
+rotex-types = { version = "0.1.1" }
+thiserror = "2.0.18"
