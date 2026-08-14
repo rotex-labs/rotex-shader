@@ -1,5 +1,5 @@
-use rotex_types::ShaderPackage;
 use rotex_shader_core::{CompileOptions, CompilerError, ShaderCompiler, ShaderSource};
+use rotex_types::ShaderPackage;
 
 pub struct SlangCompiler;
 

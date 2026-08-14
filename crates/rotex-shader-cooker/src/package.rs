@@ -1,8 +1,8 @@
 use std::fs;
 use std::path::Path;
 
+use rotex_shader_core::{CompilerError, merge_graphics_layout};
 use rotex_types::{GraphicsShaderPackage, ShaderPackage, ShaderStage};
-use rotex_shader_core::{merge_graphics_layout, CompilerError};
 
 use crate::glsl::compile_glsl;
 
@@ -44,5 +44,6 @@ pub fn write_graphics_package(
 
 pub fn read_graphics_package(path: &Path) -> Result<GraphicsShaderPackage, CompilerError> {
     let bytes = fs::read(path)?;
-    GraphicsShaderPackage::from_bytes(&bytes).map_err(|err| CompilerError::Serialize(err.to_string()))
+    GraphicsShaderPackage::from_bytes(&bytes)
+        .map_err(|err| CompilerError::Serialize(err.to_string()))
 }

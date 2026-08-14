@@ -1,5 +1,5 @@
-use rotex_types::{ShaderPackage, ShaderPayload, ShaderVariantMap};
 use rotex_shader_core::{CompileOptions, CompilerError, ShaderCompiler, ShaderSource};
+use rotex_types::{ShaderPackage, ShaderPayload, ShaderVariantMap};
 use std::hash::{DefaultHasher, Hash, Hasher};
 
 use crate::reflect::reflect_wgsl;

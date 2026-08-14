@@ -10,8 +10,9 @@ pub fn reflect_spirv(
     stage: ShaderStage,
     entry: &str,
 ) -> Result<AbstractPipelineLayout, CompilerError> {
-    let module = naga::front::spv::parse_u8_slice(spirv_bytes, &naga::front::spv::Options::default())
-        .map_err(|err| CompilerError::Reflection(err.to_string()))?;
+    let module =
+        naga::front::spv::parse_u8_slice(spirv_bytes, &naga::front::spv::Options::default())
+            .map_err(|err| CompilerError::Reflection(err.to_string()))?;
 
     let naga_stage = match stage {
         ShaderStage::Vertex => naga::ShaderStage::Vertex,

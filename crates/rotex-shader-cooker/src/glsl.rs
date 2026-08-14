@@ -1,5 +1,5 @@
-use rotex_types::{ShaderPackage, ShaderPayload, ShaderStage, ShaderVariantMap};
 use rotex_shader_core::{CompileOptions, CompilerError, ShaderCompiler, ShaderSource};
+use rotex_types::{ShaderPackage, ShaderPayload, ShaderStage, ShaderVariantMap};
 use shaderc::{Compiler, ShaderKind};
 use std::hash::{DefaultHasher, Hash, Hasher};
 
@@ -19,7 +19,12 @@ impl ShaderCompiler for GlslCompiler {
                 "glsl_compiler_requires_glsl_source".to_string(),
             ));
         };
-        compile_glsl_source(source, *stage, &options.entry_point, &define_slice(&options.defines))
+        compile_glsl_source(
+            source,
+            *stage,
+            &options.entry_point,
+            &define_slice(&options.defines),
+        )
     }
 }
 
