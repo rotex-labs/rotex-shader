@@ -3,8 +3,7 @@ use rotex_types::{ShaderPackage, ShaderPayload, ShaderStage, ShaderVariantMap};
 use shaderc::{Compiler, ShaderKind};
 use std::hash::{DefaultHasher, Hash, Hasher};
 
-use crate::reflect::reflect_spirv;
-use crate::transpile::transpile_spirv_to_wgsl;
+use crate::transpile::emit_from_spirv;
 
 pub struct GlslCompiler;
 
@@ -42,8 +41,7 @@ pub fn compile_glsl_source(
     defines: &[(&str, &str)],
 ) -> Result<ShaderPackage, CompilerError> {
     let spirv_bytes = compile_glsl_to_spirv(source, stage, entry, defines)?;
-    let layout = reflect_spirv(&spirv_bytes, stage, entry)?;
-    let wgsl = transpile_spirv_to_wgsl(&spirv_bytes)?;
+    let emitted = emit_from_spirv(&spirv_bytes, stage, entry)?;
 
     let mut hasher = DefaultHasher::new();
     spirv_bytes.hash(&mut hasher);
@@ -53,12 +51,14 @@ pub fn compile_glsl_source(
         source_hash,
         stage,
         entry_point: entry.to_string(),
-        layout,
+        layout: emitted.layout,
         variants: ShaderVariantMap {
             spirv: Some(ShaderPayload::SpirV(spirv_bytes)),
-            wgsl: Some(ShaderPayload::Wgsl(wgsl)),
+            wgsl: Some(ShaderPayload::Wgsl(emitted.wgsl)),
             dxil: None,
-            hlsl: None,
+            hlsl: Some(ShaderPayload::HlslSource(emitted.hlsl)),
+            msl: Some(ShaderPayload::Msl(emitted.msl)),
+            glsl: Some(ShaderPayload::Glsl(emitted.glsl)),
         },
     })
 }

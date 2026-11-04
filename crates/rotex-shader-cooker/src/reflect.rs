@@ -10,75 +10,13 @@ pub fn reflect_spirv(
     stage: ShaderStage,
     entry: &str,
 ) -> Result<AbstractPipelineLayout, CompilerError> {
-    let module =
-        naga::front::spv::parse_u8_slice(spirv_bytes, &naga::front::spv::Options::default())
-            .map_err(|err| CompilerError::Reflection(err.to_string()))?;
+    let module = parse_spirv(spirv_bytes)?;
+    reflect_module(&module, stage, entry)
+}
 
-    let naga_stage = match stage {
-        ShaderStage::Vertex => naga::ShaderStage::Vertex,
-        ShaderStage::Fragment => naga::ShaderStage::Fragment,
-        ShaderStage::Compute => naga::ShaderStage::Compute,
-    };
-
-    if !module
-        .entry_points
-        .iter()
-        .any(|ep| ep.name == entry && ep.stage == naga_stage)
-    {
-        return Err(CompilerError::EntryPointMissing(entry.to_string(), stage));
-    }
-
-    let visibility = stage_visibility(stage);
-    let mut groups: std::collections::BTreeMap<u32, Vec<BindGroupLayoutEntry>> =
-        std::collections::BTreeMap::new();
-
-    for (_, var) in module.global_variables.iter() {
-        let Some(binding) = &var.binding else {
-            continue;
-        };
-        let Some((ty, readonly)) = map_binding_type(&module, var) else {
-            continue;
-        };
-        groups
-            .entry(binding.group)
-            .or_default()
-            .push(BindGroupLayoutEntry {
-                binding: binding.binding,
-                visibility,
-                ty,
-                readonly,
-            });
-    }
-
-    let bind_groups = groups
-        .into_iter()
-        .map(|(set, mut entries)| {
-            entries.sort_by_key(|entry| entry.binding);
-            BindGroupLayoutDescriptor { set, entries }
-        })
-        .collect();
-
-    let push_constants = module
-        .global_variables
-        .iter()
-        .filter_map(|(_, var)| {
-            if !matches!(var.space, naga::AddressSpace::Immediate) {
-                return None;
-            }
-            let ty = module.types.get_handle(var.ty).ok()?;
-            let size = ty.inner.size(module.to_ctx());
-            Some(rotex_types::PushConstantRange {
-                stages: visibility,
-                offset: 0,
-                size: size as u32,
-            })
-        })
-        .collect();
-
-    Ok(AbstractPipelineLayout {
-        bind_groups,
-        push_constants,
-    })
+pub(crate) fn parse_spirv(spirv_bytes: &[u8]) -> Result<naga::Module, CompilerError> {
+    naga::front::spv::parse_u8_slice(spirv_bytes, &naga::front::spv::Options::default())
+        .map_err(|err| CompilerError::Reflection(err.to_string()))
 }
 
 pub fn reflect_wgsl(
@@ -91,7 +29,7 @@ pub fn reflect_wgsl(
     reflect_module(&module, stage, entry)
 }
 
-fn reflect_module(
+pub(crate) fn reflect_module(
     module: &naga::Module,
     stage: ShaderStage,
     entry: &str,
@@ -184,9 +122,16 @@ fn map_binding_type(
         naga::AddressSpace::Handle => {
             let ty = module.types.get_handle(var.ty).ok()?;
             match ty.inner {
-                naga::TypeInner::Sampler { .. } | naga::TypeInner::Image { .. } => {
-                    Some((BindingType::CombinedImageSampler, false))
-                }
+                naga::TypeInner::Sampler { .. } => Some((BindingType::Sampler, false)),
+                naga::TypeInner::Image { class, .. } => match class {
+                    naga::ImageClass::Storage { access, .. } => Some((
+                        BindingType::StorageTexture,
+                        !access.contains(naga::StorageAccess::STORE),
+                    )),
+                    naga::ImageClass::Sampled { .. }
+                    | naga::ImageClass::Depth { .. }
+                    | naga::ImageClass::External => Some((BindingType::SampledTexture, false)),
+                },
                 _ => None,
             }
         }

@@ -27,10 +27,8 @@ impl ShaderCompiler for WgslCompiler {
             entry_point: options.entry_point.clone(),
             layout,
             variants: ShaderVariantMap {
-                spirv: None,
                 wgsl: Some(ShaderPayload::Wgsl(source.clone())),
-                dxil: None,
-                hlsl: None,
+                ..Default::default()
             },
         })
     }
