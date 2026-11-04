@@ -2,7 +2,7 @@
 name = "rotex-shader-cooker"
 version = "0.2.0"
 edition = "2024"
-license = "MIT"
+license = "MIT OR Apache-2.0"
 description = "Text-path shader cooking for Rotex"
 repository = "https://github.com/rotexengine/rotex-shader-cooker"
 
