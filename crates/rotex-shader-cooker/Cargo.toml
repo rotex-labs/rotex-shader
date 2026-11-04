@@ -4,7 +4,7 @@ version = "0.2.0"
 edition = "2024"
 license = "MIT OR Apache-2.0"
 description = "Text-path shader cooking for Rotex"
-repository = "https://github.com/rotexengine/rotex-shader-cooker"
+repository = "https://github.com/rotex-labs/rotex-shader-cooker"
 
 [dependencies]
 naga = { version = "29.0.3", features = ["spv-in", "wgsl-in", "wgsl-out", "msl-out", "glsl-out", "hlsl-out"] }
