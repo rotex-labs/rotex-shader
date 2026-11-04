@@ -90,7 +90,7 @@ pub(crate) fn reflect_module(
             Some(rotex_types::PushConstantRange {
                 stages: visibility,
                 offset: 0,
-                size: size as u32,
+                size,
             })
         })
         .collect();
