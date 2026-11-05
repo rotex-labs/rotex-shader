@@ -15,5 +15,5 @@ cook = ["dep:rotex-shader-cooker"]
 
 [dependencies]
 rotex-shader-core = { path = "../rotex-shader-core", version = "0.3.0" }
-rotex-types = { version = "0.3.0", git = "https://github.com/rotex-labs/rotex-core", rev = "588c843b8b2e2f45895882c90f762b669c925c09" }
+rotex-types = { version = "0.3.0", git = "https://github.com/rotex-labs/rotex-core", rev = "23ba8931416ce7b604d91604bf421c3b514271d8" }
 rotex-shader-cooker = { path = "../rotex-shader-cooker", version = "0.3.0", optional = true }
