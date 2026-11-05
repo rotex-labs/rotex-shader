@@ -4,7 +4,11 @@ version = "0.2.0"
 edition = "2024"
 license = "MIT OR Apache-2.0"
 description = "Shared shader compilation vocabulary for Rotex"
+documentation = "https://docs.rs/rotex-shader-core"
 repository = "https://github.com/rotex-labs/rotex-shader"
+
+[package.metadata.docs.rs]
+rustdoc-args = ["--cfg", "docsrs"]
 
 [dependencies]
 rotex-types = { version = "0.2.0" }

@@ -1,3 +1,18 @@
+#![deny(missing_docs)]
+#![deny(rustdoc::broken_intra_doc_links)]
+
+//! Shared vocabulary for compiling shaders into packages.
+//!
+//! [`ShaderSource`] holds source text and a [`ShaderStage`]. [`CompileOptions`]
+//! holds the entry point and preprocessor defines. A [`ShaderCompiler`] turns
+//! that pair into a [`ShaderPackage`] or a [`CompilerError`].
+//! [`merge_graphics_layout`] combines the layouts from a vertex package and a
+//! fragment package into one [`AbstractPipelineLayout`].
+//!
+//! [`ShaderStage`], [`ShaderPackage`], [`ShaderPayload`], [`ShaderVariantMap`],
+//! [`GraphicsShaderPackage`], [`AbstractPipelineLayout`], and
+//! [`PushConstantRange`] are re-exported from `rotex-types`.
+
 mod compiler;
 mod error;
 mod layout;

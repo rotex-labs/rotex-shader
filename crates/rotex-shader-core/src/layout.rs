@@ -4,6 +4,22 @@ use rotex_types::{AbstractPipelineLayout, BindGroupLayoutDescriptor, ShaderPacka
 
 use crate::CompilerError;
 
+/// Merges the layouts of `vertex` and `fragment` into one [`AbstractPipelineLayout`].
+///
+/// Bind groups are copied from `vertex`. Each fragment group is then merged by
+/// set: an existing set gains the fragment entries and those entries are sorted
+/// by binding index, and a new set is appended. The combined groups are sorted
+/// by set index.
+///
+/// After sorting, each set index must be one greater than the previous set. A
+/// single set at any index is accepted, as is an empty group list. Two entries
+/// with the same binding index in the same set produce
+/// [`CompilerError::LayoutValidation`]. The message is
+/// `duplicate binding {binding} in set {set}` for a repeated binding, or
+/// `bind group sets must be contiguous, found gap between {prev} and {next}`
+/// for a gap.
+///
+/// Push-constant ranges are the vertex ranges followed by the fragment ranges.
 pub fn merge_graphics_layout(
     vertex: &ShaderPackage,
     fragment: &ShaderPackage,

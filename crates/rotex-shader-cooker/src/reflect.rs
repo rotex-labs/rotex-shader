@@ -5,6 +5,34 @@ use rotex_types::{
 
 use rotex_shader_core::CompilerError;
 
+/// Builds an [`AbstractPipelineLayout`] from SPIR-V `spirv_bytes` for `entry` at `stage`.
+///
+/// The bytes are parsed with naga's default SPIR-V options. Binding and
+/// push-constant rules match [`reflect_wgsl`].
+///
+/// A global with a resource binding becomes one [`BindGroupLayoutEntry`].
+/// Entries are grouped by set and sorted by binding index. The [`BindingType`]
+/// and `readonly` flag come from the variable:
+///
+/// * uniform address space maps to [`BindingType::UniformBuffer`] with `readonly` false
+/// * storage address space maps to [`BindingType::StorageBuffer`], with `readonly` true when the access does not include stores
+/// * samplers map to [`BindingType::Sampler`] with `readonly` false
+/// * sampled, depth, and external images map to [`BindingType::SampledTexture`] with `readonly` false
+/// * storage images map to [`BindingType::StorageTexture`], with `readonly` true when the access does not include stores
+///
+/// Visibility on every entry is the single stage flag for `stage`
+/// ([`ShaderStageFlags::VERTEX`], [`ShaderStageFlags::FRAGMENT`], or
+/// [`ShaderStageFlags::COMPUTE`]). Globals without a binding are skipped, as
+/// are handle types other than samplers and images.
+///
+/// Each global in naga's immediate address space becomes a
+/// [`rotex_types::PushConstantRange`] at offset `0`, sized from the naga type,
+/// with that same stage visibility. A global whose type cannot be resolved is
+/// skipped.
+///
+/// Returns [`CompilerError::EntryPointMissing`] when `entry` is not an entry
+/// point of `stage`. Returns [`CompilerError::Reflection`] when naga cannot
+/// parse the bytes.
 pub fn reflect_spirv(
     spirv_bytes: &[u8],
     stage: ShaderStage,
@@ -19,6 +47,13 @@ pub(crate) fn parse_spirv(spirv_bytes: &[u8]) -> Result<naga::Module, CompilerEr
         .map_err(|err| CompilerError::Reflection(err.to_string()))
 }
 
+/// Builds an [`AbstractPipelineLayout`] from WGSL `source` for `entry` at `stage`.
+///
+/// The text is parsed as WGSL. Binding groups, read-only flags, visibility, and
+/// push constants then follow [`reflect_spirv`]. Returns
+/// [`CompilerError::Reflection`] when naga cannot parse the text, and
+/// [`CompilerError::EntryPointMissing`] when `entry` is not an entry point of
+/// `stage`.
 pub fn reflect_wgsl(
     source: &str,
     stage: ShaderStage,

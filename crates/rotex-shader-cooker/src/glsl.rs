@@ -5,6 +5,12 @@ use std::hash::{DefaultHasher, Hash, Hasher};
 
 use crate::transpile::emit_from_spirv;
 
+/// Compiles [`ShaderSource::Glsl`] through shaderc.
+///
+/// [`ShaderCompiler::compile`] requires [`ShaderSource::Glsl`] and forwards the
+/// entry point and defines to [`compile_glsl_source`]. A [`ShaderSource`] of
+/// another language returns [`CompilerError::Unsupported`] with the message
+/// `glsl_compiler_requires_glsl_source`.
 pub struct GlslCompiler;
 
 impl ShaderCompiler for GlslCompiler {
@@ -34,6 +40,22 @@ fn define_slice(defines: &[(String, String)]) -> Vec<(&str, &str)> {
         .collect()
 }
 
+/// Compiles GLSL `source` for `stage` into a [`ShaderPackage`].
+///
+/// shaderc compiles the text to SPIR-V for the vertex, fragment, or compute
+/// kind that matches `stage`. The compile uses shaderc's performance
+/// optimization level, the entry point `entry`, and the file name `shader`.
+/// Each `(name, value)` pair in `defines` is added as a macro definition.
+///
+/// The SPIR-V is validated with naga and written out as WGSL, MSL 3.1, desktop
+/// GLSL 450, and HLSL. [`ShaderPackage::source_hash`] is a
+/// [`std::hash::DefaultHasher`] hash of the SPIR-V bytes. The package stores
+/// that SPIR-V plus the four text variants. The DXIL variant is empty.
+///
+/// shaderc failures return [`CompilerError::Shaderc`]. A SPIR-V parse failure
+/// returns [`CompilerError::Reflection`]. A missing entry point returns
+/// [`CompilerError::EntryPointMissing`]. Validation or backend write failures
+/// return [`CompilerError::Transpile`].
 pub fn compile_glsl_source(
     source: &str,
     stage: ShaderStage,
@@ -90,6 +112,10 @@ fn compile_glsl_to_spirv(
     Ok(artifact.as_binary_u8().to_vec())
 }
 
+/// Compiles GLSL `source` for `stage` with [`GlslCompiler`].
+///
+/// `entry` becomes the [`CompileOptions`] entry point, and `defines` are copied
+/// into [`CompileOptions::defines`]. The result matches [`compile_glsl_source`].
 pub fn compile_glsl(
     source: &str,
     stage: ShaderStage,
