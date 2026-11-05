@@ -1,0 +1,13 @@
+[package]
+name = "rotex-shader-cooker"
+version = "0.2.0"
+edition = "2024"
+license = "MIT OR Apache-2.0"
+description = "Text-path shader cooking for Rotex"
+repository = "https://github.com/rotex-labs/rotex-shader-cooker"
+
+[dependencies]
+naga = { version = "29.0.3", features = ["spv-in", "wgsl-in", "wgsl-out", "msl-out", "glsl-out", "hlsl-out"] }
+rotex-shader-core = { version = "0.2.0" }
+rotex-types = { version = "0.2.0" }
+shaderc = "0.10.1"
