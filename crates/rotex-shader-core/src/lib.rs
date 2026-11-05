@@ -13,15 +13,21 @@
 //! [`GraphicsShaderPackage`], [`AbstractPipelineLayout`], and
 //! [`PushConstantRange`] are re-exported from `rotex-types`.
 
+mod budget;
 mod compiler;
 mod error;
+mod key;
 mod layout;
 mod options;
+mod reload;
 mod source;
 
+pub use budget::{DEFAULT_VARIANT_BUDGET, check_variant_budget};
 pub use compiler::ShaderCompiler;
 pub use error::CompilerError;
+pub use key::artifact_key;
 pub use layout::merge_graphics_layout;
 pub use options::CompileOptions;
+pub use reload::ReloadTransaction;
 pub use rotex_types::shader::*;
 pub use source::ShaderSource;

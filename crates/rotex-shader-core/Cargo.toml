@@ -1,6 +1,6 @@
 [package]
 name = "rotex-shader-core"
-version = "0.2.0"
+version = "0.3.0"
 edition = "2024"
 license = "MIT OR Apache-2.0"
 description = "Shared shader compilation vocabulary for Rotex"
@@ -11,5 +11,6 @@ repository = "https://github.com/rotex-labs/rotex-shader"
 rustdoc-args = ["--cfg", "docsrs"]
 
 [dependencies]
-rotex-types = { version = "0.2.0" }
+blake3 = "1"
+rotex-types = { version = "0.3.0", git = "https://github.com/rotex-labs/rotex-core", rev = "588c843b8b2e2f45895882c90f762b669c925c09" }
 thiserror = "2.0.18"

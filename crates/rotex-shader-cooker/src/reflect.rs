@@ -7,7 +7,8 @@ use rotex_shader_core::CompilerError;
 
 /// Builds an [`AbstractPipelineLayout`] from SPIR-V `spirv_bytes` for `entry` at `stage`.
 ///
-/// The bytes are parsed with naga's default SPIR-V options. Binding and
+/// The bytes are parsed with naga's SPIR-V options, allowing capabilities
+/// outside naga's strict set so Slang's draw-parameter builtins load. Binding and
 /// push-constant rules match [`reflect_wgsl`].
 ///
 /// A global with a resource binding becomes one [`BindGroupLayoutEntry`].
@@ -18,6 +19,7 @@ use rotex_shader_core::CompilerError;
 /// * storage address space maps to [`BindingType::StorageBuffer`], with `readonly` true when the access does not include stores
 /// * samplers map to [`BindingType::Sampler`] with `readonly` false
 /// * sampled, depth, and external images map to [`BindingType::SampledTexture`] with `readonly` false
+/// * a SPIR-V variable whose type is a sampled image is promoted to [`BindingType::CombinedImageSampler`]
 /// * storage images map to [`BindingType::StorageTexture`], with `readonly` true when the access does not include stores
 ///
 /// Visibility on every entry is the single stage flag for `stage`
@@ -39,12 +41,20 @@ pub fn reflect_spirv(
     entry: &str,
 ) -> Result<AbstractPipelineLayout, CompilerError> {
     let module = parse_spirv(spirv_bytes)?;
-    reflect_module(&module, stage, entry)
+    let mut layout = reflect_module(&module, stage, entry)?;
+    promote_combined_images(&mut layout, spirv_bytes);
+    Ok(layout)
 }
 
 pub(crate) fn parse_spirv(spirv_bytes: &[u8]) -> Result<naga::Module, CompilerError> {
-    naga::front::spv::parse_u8_slice(spirv_bytes, &naga::front::spv::Options::default())
-        .map_err(|err| CompilerError::Reflection(err.to_string()))
+    naga::front::spv::parse_u8_slice(
+        spirv_bytes,
+        &naga::front::spv::Options {
+            strict_capabilities: false,
+            ..Default::default()
+        },
+    )
+    .map_err(|err| CompilerError::Reflection(err.to_string()))
 }
 
 /// Builds an [`AbstractPipelineLayout`] from WGSL `source` for `entry` at `stage`.
@@ -172,4 +182,73 @@ fn map_binding_type(
         }
         _ => None,
     }
+}
+
+fn promote_combined_images(layout: &mut AbstractPipelineLayout, spirv_bytes: &[u8]) {
+    let combined = combined_image_bindings(spirv_bytes);
+    if combined.is_empty() {
+        return;
+    }
+    for group in &mut layout.bind_groups {
+        for entry in &mut group.entries {
+            if entry.ty == BindingType::SampledTexture
+                && combined.contains(&(group.set, entry.binding))
+            {
+                entry.ty = BindingType::CombinedImageSampler;
+            }
+        }
+    }
+}
+
+fn combined_image_bindings(bytes: &[u8]) -> Vec<(u32, u32)> {
+    if bytes.len() < 20 || !bytes.len().is_multiple_of(4) {
+        return Vec::new();
+    }
+    let words: Vec<u32> = bytes
+        .as_chunks::<4>()
+        .0
+        .iter()
+        .map(|chunk| u32::from_le_bytes(*chunk))
+        .collect();
+    if words[0] != 0x0723_0203 {
+        return Vec::new();
+    }
+    let mut sampled = std::collections::HashSet::new();
+    let mut pointers = std::collections::HashSet::new();
+    let mut variables = Vec::new();
+    let mut binding = std::collections::HashMap::new();
+    let mut set = std::collections::HashMap::new();
+    let mut index = 5;
+    while index < words.len() {
+        let header = words[index];
+        let len = (header >> 16) as usize;
+        let op = header & 0xffff;
+        if len == 0 || index + len > words.len() {
+            break;
+        }
+        let inst = &words[index + 1..index + len];
+        match op {
+            27 if !inst.is_empty() => {
+                sampled.insert(inst[0]);
+            }
+            32 if inst.len() >= 3 && sampled.contains(&inst[2]) => {
+                pointers.insert(inst[0]);
+            }
+            59 if inst.len() >= 2 && pointers.contains(&inst[0]) => {
+                variables.push(inst[1]);
+            }
+            71 if inst.len() >= 3 && inst[1] == 33 => {
+                binding.insert(inst[0], inst[2]);
+            }
+            71 if inst.len() >= 3 && inst[1] == 34 => {
+                set.insert(inst[0], inst[2]);
+            }
+            _ => {}
+        }
+        index += len;
+    }
+    variables
+        .into_iter()
+        .filter_map(|id| Some((set.get(&id).copied().unwrap_or(0), *binding.get(&id)?)))
+        .collect()
 }

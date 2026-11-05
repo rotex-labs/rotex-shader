@@ -1,6 +1,6 @@
 [package]
 name = "rotex-shader-cooker"
-version = "0.2.0"
+version = "0.3.0"
 edition = "2024"
 license = "MIT OR Apache-2.0"
 description = "Text-path shader cooking for Rotex"
@@ -12,6 +12,7 @@ rustdoc-args = ["--cfg", "docsrs"]
 
 [dependencies]
 naga = { version = "29.0.3", features = ["spv-in", "wgsl-in", "wgsl-out", "msl-out", "glsl-out", "hlsl-out"] }
-rotex-shader-core = { path = "../rotex-shader-core", version = "0.2.0" }
-rotex-types = { version = "0.2.0" }
+rotex-shader-core = { path = "../rotex-shader-core", version = "0.3.0" }
+rotex-shader-slang = { path = "../rotex-shader-slang", version = "0.3.0" }
+rotex-types = { version = "0.3.0", git = "https://github.com/rotex-labs/rotex-core", rev = "588c843b8b2e2f45895882c90f762b669c925c09" }
 shaderc = "0.10.1"

@@ -54,6 +54,14 @@ pub enum CompilerError {
         /// Name of the unsupported case.
         String,
     ),
+    /// Declared keywords expand past the variant budget.
+    #[error("variant budget exceeded: {0} combinations, budget is {1}")]
+    VariantBudget(
+        /// Number of combinations the keywords would produce.
+        u32,
+        /// Maximum combinations the cook allows.
+        u32,
+    ),
     /// An I/O operation failed.
     #[error("I/O error: {0}")]
     Io(

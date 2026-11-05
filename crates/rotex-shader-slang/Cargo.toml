@@ -1,0 +1,15 @@
+[package]
+name = "rotex-shader-slang"
+version = "0.3.0"
+edition = "2024"
+license = "MIT OR Apache-2.0"
+description = "Slang compiler front end that cooks one shader into target payloads"
+documentation = "https://docs.rs/rotex-shader-slang"
+repository = "https://github.com/rotex-labs/rotex-shader"
+
+[package.metadata.docs.rs]
+rustdoc-args = ["--cfg", "docsrs"]
+
+[dependencies]
+rotex-shader-core = { path = "../rotex-shader-core", version = "0.3.0" }
+rotex-types = { version = "0.3.0", git = "https://github.com/rotex-labs/rotex-core", rev = "588c843b8b2e2f45895882c90f762b669c925c09" }

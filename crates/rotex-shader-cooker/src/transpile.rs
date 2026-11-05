@@ -11,6 +11,7 @@ pub struct EmittedSources {
     pub wgsl: String,
     pub msl: String,
     pub glsl: String,
+    pub glsl_es: Option<String>,
     pub hlsl: String,
     pub layout: rotex_types::AbstractPipelineLayout,
 }
@@ -24,20 +25,48 @@ pub fn emit_from_spirv(
     let layout = reflect_module(&module, stage, entry)?;
     let naga_stage = naga_stage(stage);
     let info = validate(&module)?;
+    let glsl_es = write_glsl(
+        &module,
+        &info,
+        naga_stage,
+        entry,
+        naga::back::glsl::Version::Embedded {
+            version: 300,
+            is_webgl: true,
+        },
+    )
+    .ok();
     Ok(EmittedSources {
         wgsl: write_wgsl(&module, &info)?,
         msl: write_msl(&module, &info, naga_stage, entry)?,
-        glsl: write_glsl(&module, &info, naga_stage, entry)?,
+        glsl: write_glsl(
+            &module,
+            &info,
+            naga_stage,
+            entry,
+            naga::back::glsl::Version::Desktop(450),
+        )?,
+        glsl_es,
         hlsl: write_hlsl(&module, &info, naga_stage, entry)?,
         layout,
     })
 }
 
+fn target_capabilities() -> naga::valid::Capabilities {
+    naga::valid::Capabilities::IMMEDIATES
+        | naga::valid::Capabilities::CLIP_DISTANCE
+        | naga::valid::Capabilities::CULL_DISTANCE
+        | naga::valid::Capabilities::CUBE_ARRAY_TEXTURES
+        | naga::valid::Capabilities::MULTISAMPLED_SHADING
+        | naga::valid::Capabilities::TEXTURE_AND_SAMPLER_BINDING_ARRAY
+        | naga::valid::Capabilities::BUFFER_BINDING_ARRAY
+        | naga::valid::Capabilities::STORAGE_TEXTURE_BINDING_ARRAY
+        | naga::valid::Capabilities::STORAGE_BUFFER_BINDING_ARRAY
+}
+
 fn validate(module: &naga::Module) -> Result<naga::valid::ModuleInfo, CompilerError> {
-    let mut validator = naga::valid::Validator::new(
-        naga::valid::ValidationFlags::all(),
-        naga::valid::Capabilities::all(),
-    );
+    let mut validator =
+        naga::valid::Validator::new(naga::valid::ValidationFlags::all(), target_capabilities());
     validator
         .validate(module)
         .map_err(|err| CompilerError::Transpile(err.to_string()))
@@ -59,7 +88,7 @@ fn write_msl(
 ) -> Result<String, CompilerError> {
     let options = naga::back::msl::Options {
         lang_version: (3, 1),
-        fake_missing_bindings: true,
+        fake_missing_bindings: false,
         ..Default::default()
     };
     let pipeline = naga::back::msl::PipelineOptions {
@@ -76,9 +105,10 @@ fn write_glsl(
     info: &naga::valid::ModuleInfo,
     stage: naga::ShaderStage,
     entry: &str,
+    version: naga::back::glsl::Version,
 ) -> Result<String, CompilerError> {
     let options = naga::back::glsl::Options {
-        version: naga::back::glsl::Version::Desktop(450),
+        version,
         ..Default::default()
     };
     let pipeline = naga::back::glsl::PipelineOptions {
@@ -109,7 +139,7 @@ fn write_hlsl(
     entry: &str,
 ) -> Result<String, CompilerError> {
     let options = naga::back::hlsl::Options {
-        fake_missing_bindings: true,
+        fake_missing_bindings: false,
         ..Default::default()
     };
     let pipeline = naga::back::hlsl::PipelineOptions {
@@ -122,6 +152,35 @@ fn write_hlsl(
         .write(module, info, None)
         .map_err(|err| CompilerError::Transpile(err.to_string()))?;
     Ok(captured.borrow().clone())
+}
+
+pub fn glsl_from_spirv(
+    spirv_bytes: &[u8],
+    stage: ShaderStage,
+    entry: &str,
+) -> Result<(String, Option<String>), CompilerError> {
+    let module = parse_spirv(spirv_bytes)?;
+    let info = validate(&module)?;
+    let naga_stage = naga_stage(stage);
+    let desktop = write_glsl(
+        &module,
+        &info,
+        naga_stage,
+        entry,
+        naga::back::glsl::Version::Desktop(450),
+    )?;
+    let es = write_glsl(
+        &module,
+        &info,
+        naga_stage,
+        entry,
+        naga::back::glsl::Version::Embedded {
+            version: 300,
+            is_webgl: true,
+        },
+    )
+    .ok();
+    Ok((desktop, es))
 }
 
 fn naga_stage(stage: ShaderStage) -> naga::ShaderStage {

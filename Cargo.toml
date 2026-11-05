@@ -3,4 +3,6 @@ resolver = "2"
 members = [
     "crates/rotex-shader-core",
     "crates/rotex-shader-cooker",
+    "crates/rotex-shader-slang",
+    "crates/rotex-shader-graph",
 ]

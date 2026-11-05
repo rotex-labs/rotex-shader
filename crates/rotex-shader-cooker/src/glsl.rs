@@ -64,6 +64,7 @@ pub fn compile_glsl_source(
 ) -> Result<ShaderPackage, CompilerError> {
     let spirv_bytes = compile_glsl_to_spirv(source, stage, entry, defines)?;
     let emitted = emit_from_spirv(&spirv_bytes, stage, entry)?;
+    let _ = &emitted.glsl_es;
 
     let mut hasher = DefaultHasher::new();
     spirv_bytes.hash(&mut hasher);
