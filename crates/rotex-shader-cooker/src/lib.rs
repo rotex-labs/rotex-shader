@@ -1,3 +1,21 @@
+#![deny(missing_docs)]
+#![deny(rustdoc::broken_intra_doc_links)]
+
+//! Compile shader source into [`ShaderPackage`] and [`GraphicsShaderPackage`] values.
+//!
+//! [`GlslCompiler`] compiles GLSL to SPIR-V with shaderc, reflects the resource
+//! layout, and stores WGSL, MSL, GLSL, and HLSL text beside the SPIR-V.
+//! [`WgslCompiler`] reflects WGSL and stores the original source.
+//! [`SlangCompiler`] returns [`CompilerError::Unsupported`]. [`reflect_spirv`]
+//! and [`reflect_wgsl`] build an [`AbstractPipelineLayout`] from SPIR-V bytes
+//! or WGSL text. [`compile_graphics_package`] compiles a vertex and fragment
+//! GLSL pair and merges their layouts. [`read_package`], [`write_package`],
+//! [`read_graphics_package`], and [`write_graphics_package`] load and store
+//! postcard-encoded packages.
+//!
+//! [`ShaderCompiler`], [`ShaderSource`], [`CompileOptions`], [`CompilerError`],
+//! and [`merge_graphics_layout`] are re-exported from `rotex-shader-core`.
+
 mod glsl;
 mod package;
 mod reflect;

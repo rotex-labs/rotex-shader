@@ -1,22 +1,72 @@
 use rotex_types::ShaderStage;
 use thiserror::Error;
 
+/// Failure from compilation, reflection, layout merge, or package I/O.
 #[derive(Debug, Error)]
 pub enum CompilerError {
+    /// The shader compiler rejected the source.
+    ///
+    /// The string is the compiler diagnostic.
     #[error("shader compilation failed: {0}")]
-    Shaderc(String),
+    Shaderc(
+        /// Compiler diagnostic text.
+        String,
+    ),
+    /// Parsing or reflection failed.
+    ///
+    /// SPIR-V and WGSL parse errors both use this variant. The string is the
+    /// diagnostic.
     #[error("SPIR-V reflection failed: {0}")]
-    Reflection(String),
+    Reflection(
+        /// Parser or reflection diagnostic text.
+        String,
+    ),
+    /// Validation or a text-backend write failed.
+    ///
+    /// Covers module validation and WGSL, MSL, GLSL, and HLSL output. The
+    /// string is the diagnostic.
     #[error("WGSL transpile failed: {0}")]
-    Transpile(String),
+    Transpile(
+        /// Validation or transpile diagnostic text.
+        String,
+    ),
+    /// The requested entry point does not exist for this stage.
     #[error("entry point '{0}' not found for stage {1:?}")]
-    EntryPointMissing(String, ShaderStage),
+    EntryPointMissing(
+        /// Entry point name that was requested.
+        String,
+        /// Stage that was searched.
+        ShaderStage,
+    ),
+    /// A merged graphics layout is inconsistent.
+    ///
+    /// The string describes a duplicate binding or a gap between bind-group sets.
     #[error("layout validation failed: {0}")]
-    LayoutValidation(String),
+    LayoutValidation(
+        /// Description of the layout conflict.
+        String,
+    ),
+    /// This compiler does not support the source or operation.
+    ///
+    /// The string names the unsupported case.
     #[error("unsupported: {0}")]
-    Unsupported(String),
+    Unsupported(
+        /// Name of the unsupported case.
+        String,
+    ),
+    /// An I/O operation failed.
     #[error("I/O error: {0}")]
-    Io(#[from] std::io::Error),
+    Io(
+        /// The underlying I/O error.
+        #[from]
+        std::io::Error,
+    ),
+    /// Encoding or decoding a package failed.
+    ///
+    /// The string is the serializer diagnostic.
     #[error("serialization error: {0}")]
-    Serialize(String),
+    Serialize(
+        /// Serializer diagnostic text.
+        String,
+    ),
 }
