@@ -125,7 +125,7 @@ fn main() -> @location(0) vec4<f32> {
         let Some(slangc) = rotex_shader_slang::slangc_from_env() else {
             return;
         };
-        let source = include_str!("../../../../../examples/rotex-examples/shaders/triangle.slang");
+        let source = include_str!("fixtures/triangle.slang");
         let first =
             cook_graphics(&slangc, source, "vertexMain", "fragmentMain", &[], &[]).expect("cook");
         let second = cook_graphics(&slangc, source, "vertexMain", "fragmentMain", &[], &[])
