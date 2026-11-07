@@ -230,7 +230,7 @@ impl SlangInvoke<'_> {
         output: &Path,
         diagnostics: &mut Vec<Diagnostic>,
     ) -> Option<Vec<u8>> {
-        match self.run(target, profile, output, &[]) {
+        match self.run(target, profile, output, &["-DROTEX_DXIL=1"]) {
             Ok(()) => fs::read(output).ok().filter(|bytes| !bytes.is_empty()),
             Err(err) => {
                 diagnostics.push(Diagnostic {
