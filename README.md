@@ -22,12 +22,12 @@ This repository defines how a compiler turns source into a shader package, then 
 
 | Package | Description | Version |
 |---------|-------------|---------|
-| [`rotex-shader-core`](crates/rotex-shader-core/README.md) | The shader compilation contract | 0.2.0 |
-| [`rotex-shader-cooker`](crates/rotex-shader-cooker/README.md) | Reflects shaders into the payloads backends load | 0.2.0 |
+| [`rotex-shader-core`](crates/rotex-shader-core/README.md) | The shader compilation contract | 0.3.0 |
+| [`rotex-shader-cooker`](crates/rotex-shader-cooker/README.md) | Reflects shaders into the payloads backends load | 0.3.0 |
 
 ## Dependencies
 
-`rotex-shader-cooker` depends on `rotex-shader-core` by path plus version inside this repository. Both depend on published `rotex-types`. A requirement that leaves the slice stays a crates.io version. Each package keeps its own version and its own release tag (`rotex-shader-core-v0.2.0`, `rotex-shader-cooker-v0.2.0`).
+`rotex-shader-cooker` depends on `rotex-shader-core` by path plus version inside this repository. Both depend on published `rotex-types`. A requirement that leaves the slice stays a crates.io version. Each package keeps its own version and its own release tag (`rotex-shader-core-v0.3.0`, `rotex-shader-cooker-v0.3.0`).
 
 ## License
 

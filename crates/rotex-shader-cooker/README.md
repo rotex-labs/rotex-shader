@@ -30,7 +30,7 @@ Reflects shaders into the payloads backends load.
 
 ## Status
 
-Version 0.2.0. `SlangCompiler` is public and returns unsupported. This crate does not claim Slang support.
+Version 0.3.0. `SlangCompiler` is public and returns unsupported. This crate does not claim Slang support.
 
 ## License
 

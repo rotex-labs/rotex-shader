@@ -30,7 +30,7 @@ The shader compilation contract.
 
 ## Status
 
-Version 0.2.0. No GPU API imports.
+Version 0.3.0. No GPU API imports.
 
 ## License
 
