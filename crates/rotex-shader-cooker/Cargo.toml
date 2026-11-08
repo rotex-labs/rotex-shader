@@ -14,5 +14,5 @@ rustdoc-args = ["--cfg", "docsrs"]
 naga = { version = "29.0.3", features = ["spv-in", "wgsl-in", "wgsl-out", "msl-out", "glsl-out", "hlsl-out"] }
 rotex-shader-core = { path = "../rotex-shader-core", version = "0.3.0" }
 rotex-shader-slang = { path = "../rotex-shader-slang", version = "0.3.0" }
-rotex-types = { version = "0.3.0", git = "https://github.com/rotex-labs/rotex-core", rev = "23ba8931416ce7b604d91604bf421c3b514271d8" }
+rotex-types = "0.3.0"
 shaderc = "0.10.1"
